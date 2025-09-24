@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Narrative Voice Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .activity-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .activity-section {
+            display: none;
+        }
+
+        .activity-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .instructions {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .score-display {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Voice Identification Styles */
+        .voice-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .voice-card:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .voice-card.correct {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-color: #28a745;
+        }
+
+        .voice-card.incorrect {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-color: #dc3545;
+        }
+
+        .voice-label {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .sample-text {
+            font-size: 1.1em;
+            font-style: italic;
+            color: #444;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .sample-context {
+            font-size: 0.9em;
+            color: #666;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        /* Sorting Activity Styles */
+        .sorting-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .drop-zone {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 3px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 200px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .drop-zone h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .draggable-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .draggable {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: move;
+            user-select: none;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .draggable:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .draggable.dragging {
+            opacity: 0.7;
+        }
+
+        /* Matching Activity Styles */
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .matching-column h3 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .match-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .match-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .match-item.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .match-item.correct {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-color: #28a745;
+        }
+
+        .match-item.incorrect {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-color: #dc3545;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            color: #667eea;
+            text-transform: capitalize;
+            transition: all 0.3s ease;
+        }
+
+        .option-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .feedback {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+        }
+
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback.success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+            color: #2d3436;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(250, 177, 160, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .activity-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .tab-btn {
+                width: 200px;
+                text-align: center;
+            }
+
+            .sorting-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .matching-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Narrative Voice Explorer</h1>
+            <p>Master the art of narrative voice in short stories and prose</p>
+        </div>
+
+        <div class="activity-tabs">
+            <button class="tab-btn active" data-activity="identify">Voice Detective</button>
+            <button class="tab-btn" data-activity="sort">Voice Sorting</button>
+            <button class="tab-btn" data-activity="match">Style Matcher</button>
+        </div>
+
+        <!-- Activity 1: Voice Identification -->
+        <div id="identify" class="activity-section active">
+            <div class="instructions">
+                <h3>🔍 Voice Detective Challenge</h3>
+                <p>Read each prose excerpt and identify the narrative voice. Pay attention to tone, perspective, and style!</p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-identify"></div>
+            </div>
+
+            <div class="score-display" id="score-identify">Score: 0 / 6</div>
+
+            <div id="voice-cards"></div>
+
+            <div class="feedback" id="feedback-identify"></div>
+            <button class="reset-btn" data-reset="identify">🔄 Try Again</button>
+        </div>
+
+        <!-- Activity 2: Drag and Drop Sorting -->
+        <div id="sort" class="activity-section">
+            <div class="instructions">
+                <h3>📚 Voice Sorting Workshop</h3>
+                <p>Drag the narrative techniques below into their correct voice categories. Each technique creates a different storytelling effect!</p>
+            </div>
+
+            <div class="sorting-grid">
+                <div class="drop-zone" data-category="humorous">
+                    <h3>😄 Humorous Voice</h3>
+                    <p>Techniques that add comedy and lightness</p>
+                </div>
+                <div class="drop-zone" data-category="dramatic">
+                    <h3>🎭 Dramatic Voice</h3>
+                    <p>Techniques that create intensity and emotion</p>
+                </div>
+                <div class="drop-zone" data-category="professional">
+                    <h3>📋 Professional Voice</h3>
+                    <p>Techniques for clear, authoritative writing</p>
+                </div>
+                <div class="drop-zone" data-category="mysterious">
+                    <h3>🔮 Mysterious Voice</h3>
+                    <p>Techniques that create suspense and intrigue</p>
+                </div>
+            </div>
+
+            <div class="draggable-container" id="draggable-items"></div>
+
+            <div class="feedback" id="feedback-sort"></div>
+            <button class="reset-btn" data-reset="sort">🔄 Reset Sorting</button>
+        </div>
+
+        <!-- Activity 3: Style Matching -->
+        <div id="match" class="activity-section">
+            <div class="instructions">
+                <h3>🎯 Style Matcher</h3>
+                <p>Match the writing samples with their narrative effects. Understanding how different styles impact readers is key to developing your voice!</p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-match"></div>
+            </div>
+
+            <div class="score-display" id="score-match">Score: 0 / 5</div>
+
+            <div class="matching-grid">
+                <div class="matching-column">
+                    <h3>📝 Writing Samples</h3>
+                    <div id="text-samples"></div>
+                </div>
+                <div class="matching-column">
+                    <h3>🎯 Narrative Effects</h3>
+                    <div id="effect-samples"></div>
+                </div>
+            </div>
+
+            <div class="feedback" id="feedback-match"></div>
+            <button class="reset-btn" data-reset="match">🔄 Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const voiceExamples = [
+            {
+                text: "Jake's cooking skills were legendary – legendarily terrible. His last attempt at toast resulted in what the fire department later classified as 'a learning experience.'",
+                voice: "humorous",
+                context: "From a coming-of-age short story about independence"
+            },
+            {
+                text: "The notification buzzed at 3 AM. Sarah's hands trembled as she read the message that would shatter everything she thought she knew about her best friend.",
+                voice: "dramatic",
+                context: "From a contemporary short story about betrayal"
+            },
+            {
+                text: "Research indicates that approximately 60% of teenagers experience anxiety related to social media use. The following case study examines one individual's experience over a six-month period.",
+                voice: "professional",
+                context: "From a fictional research report within a story"
+            },
+            {
+                text: "Every Tuesday at exactly 4:17 PM, the old woman would appear at the bus stop. She never boarded any bus. She just stood there, watching, waiting for something that never came.",
+                voice: "mysterious",
+                context: "From a mystery short story set in suburbia"
+            },
+            {
+                text: "You walk into the new school, and immediately every conversation stops. Every head turns. Every pair of eyes judges the way you're dressed, the way you walk, the way you exist in their carefully constructed social ecosystem.",
+                voice: "dramatic",
+                context: "From a young adult story using second person POV"
+            },
+            {
+                text: "Emma's plan to impress her crush was foolproof – if you ignored the part where she practiced her 'casual' conversation starter so many times that she accidentally said it to her dog, her mirror, and the pizza delivery guy.",
+                voice: "humorous",
+                context: "From a romantic comedy short story"
+            }
+        ];
+
+        const sortingItems = [
+            { text: "Funny comparisons and metaphors", category: "humorous" },
+            { text: "Facts, statistics, and data", category: "professional" },
+            { text: "Emotional and sensory language", category: "dramatic" },
+            { text: "Hidden clues and foreshadowing", category: "mysterious" },
+            { text: "Sarcasm and ironic observations", category: "humorous" },
+            { text: "Clear, objective reporting", category: "professional" },
+            { text: "Intense imagery and feelings", category: "dramatic" },
+            { text: "Unanswered questions", category: "mysterious" },
+            { text: "Research and evidence", category: "professional" },
+            { text: "Unexpected punchlines", category: "humorous" },
+            { text: "Vivid sensory descriptions", category: "dramatic" },
+            { text: "Ambiguous statements", category: "mysterious" }
+        ];
+
+        const matchingPairs = [
+            {
+                text: "Short sentences. Heart pounding. Everything happening fast.",
+                effect: "Creates tension and excitement"
+            },
+            {
+                text: "The school hallway stretched endlessly before me, fluorescent lights buzzing overhead like angry wasps, lockers standing like metal sentries guarding teenage secrets.",
+                effect: "Builds detailed, cinematic scenes"
+            },
+            {
+                text: "Survey results show 68% of participants. Data collected over three months. Statistical significance: p<0.05.",
+                effect: "Establishes factual credibility"
+            },
+            {
+                text: "She always knew things before they happened. Don't ask how. Some secrets are better left buried.",
+                effect: "Creates intrigue and suspense"
+            },
+            {
+                text: "Look, I'm going to tell you exactly what happened that night – no sugar-coating, no dramatic nonsense, just the truth.",
+                effect: "Builds connection with the audience"
+            }
+        ];
+
+        // Game state
+        let gameState = {
+            identify: { score: 0, attempts: 0, completed: [] },
+            sort: { score: 0, itemsPlaced: 0 },
+            match: { score: 0, attempts: 0, selected: null, completed: [] }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            initializeIdentifyActivity();
+            initializeSortActivity();
+            initializeMatchActivity();
+        });
+
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const activity = this.dataset.activity;
+                    switchActivity(activity);
+                });
+            });
+
+            // Reset buttons
+            document.querySelectorAll('.reset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const activity = this.dataset.reset;
+                    resetActivity(activity);
+                });
+            });
+        }
+
+        function switchActivity(activityName) {
+            // Update tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-activity="${activityName}"]`).classList.add('active');
+
+            // Update sections
+            document.querySelectorAll('.activity-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(activityName).classList.add('active');
+        }
+
+        // Voice Identification Activity
+        function initializeIdentifyActivity() {
+            const container = document.getElementById('voice-cards');
+            const shuffled = [...voiceExamples].sort(() => Math.random() - 0.5);
+            
+            container.innerHTML = shuffled.map((example, index) => `
+                <div class="voice-card" data-index="${index}" data-voice="${example.voice}">
+                    <div class="voice-label">Click to identify voice type</div>
+                    <div class="sample-text">"${example.text}"</div>
+                    <div class="sample-context">${example.context}</div>
+                </div>
+            `).join('');
+
+            // Add click listeners
+            container.querySelectorAll('.voice-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    if (this.classList.contains('correct') || this.classList.contains('incorrect')) return;
+                    showVoiceModal(this);
+                });
+            });
+        }
+
+        function showVoiceModal(cardElement) {
+            const voices = ['humorous', 'dramatic', 'professional', 'mysterious'];
+            const correctVoice = cardElement.dataset.voice;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>Select the Voice Type</h3>
+                    ${voices.map(voice => `
+                        <button class="option-btn" data-voice="${voice}">${voice.charAt(0).toUpperCase() + voice.slice(1)}</button>
+                    `).join('')}
+                </div>
+            `;
+
+            modal.querySelectorAll('.option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const selectedVoice = this.dataset.voice;
+                    checkVoiceAnswer(cardElement, selectedVoice, correctVoice);
+                    document.body.removeChild(modal);
+                });
+            });
+
+            document.body.appendChild(modal);
+        }
+
+        function checkVoiceAnswer(cardElement, selected, correct) {
+            const isCorrect = selected === correct;
+            
+            if (isCorrect) {
+                cardElement.classList.add('correct');
+                cardElement.querySelector('.voice-label').textContent = `✅ ${correct.charAt(0).toUpperCase() + correct.slice(1)} Voice`;
+                gameState.identify.score++;
+            } else {
+                cardElement.classList.add('incorrect');
+                cardElement.querySelector('.voice-label').textContent = `❌ Correct: ${correct.charAt(0).toUpperCase() + correct.slice(1)}`;
+            }
+            
+            gameState.identify.attempts++;
+            updateProgress('identify');
+            updateScore('identify');
+            
+            if (gameState.identify.attempts === voiceExamples.length) {
+                showFeedback('identify', `Great job! You identified ${gameState.identify.score} out of ${voiceExamples.length} voice types correctly.`);
+            }
+        }
+
+        // Sorting Activity
+        function initializeSortActivity() {
+            const container = document.getElementById('draggable-items');
+            const shuffled = [...sortingItems].sort(() => Math.random() - 0.5);
+            
+            container.innerHTML = shuffled.map(item => `
+                <div class="draggable" draggable="true" data-category="${item.category}">
+                    ${item.text}
+                </div>
+            `).join('');
+
+            // Add drag listeners
+            container.querySelectorAll('.draggable').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+
+            // Add drop listeners
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('drop', handleDrop);
+                zone.addEventListener('dragenter', handleDragEnter);
+                zone.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        function handleDragStart(e) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.category);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                e.currentTarget.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const zone = e.currentTarget;
+            zone.classList.remove('drag-over');
+            
+            const draggedCategory = e.dataTransfer.getData('text/plain');
+            const zoneCategory = zone.dataset.category;
+            const draggedElement = document.querySelector('.dragging');
+            
+            if (draggedCategory === zoneCategory) {
+                // Correct drop
+                draggedElement.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                draggedElement.style.cursor = 'default';
+                draggedElement.draggable = false;
+                zone.appendChild(draggedElement);
+                gameState.sort.score++;
+                gameState.sort.itemsPlaced++;
+            } else {
+                // Incorrect drop - visual feedback
+                zone.style.background = 'linear-gradient(135deg, #f8d7da, #f5c6cb)';
+                setTimeout(() => {
+                    zone.style.background = '';
+                }, 1000);
+            }
+            
+            // Check if complete
+            if (gameState.sort.itemsPlaced === sortingItems.length) {
+                showFeedback('sort', `Excellent! You correctly sorted ${gameState.sort.score} out of ${sortingItems.length} items.`);
+            }
+        }
+
+        // Matching Activity
+        function initializeMatchActivity() {
+            const textContainer = document.getElementById('text-samples');
+            const effectContainer = document.getElementById('effect-samples');
+            
+            const shuffledTexts = [...matchingPairs].sort(() => Math.random() - 0.5);
+            const shuffledEffects = [...matchingPairs.map(p => p.effect)].sort(() => Math.random() - 0.5);
+            
+            textContainer.innerHTML = shuffledTexts.map((pair, index) => `
+                <div class="match-item" data-type="text" data-id="${index}">
+                    "${pair.text}"
+                </div>
+            `).join('');
+            
+            effectContainer.innerHTML = shuffledEffects.map((effect, index) => `
+                <div class="match-item" data-type="effect" data-id="${index}">
+                    ${effect}
+                </div>
+            `).join('');
+
+            // Add click listeners
+            document.querySelectorAll('.match-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    handleMatchSelection(this);
+                });
+            });
+        }
+
+        function handleMatchSelection(element) {
+            if (element.classList.contains('correct') || element.classList.contains('incorrect')) return;
+            
+            if (!gameState.match.selected) {
+                // First selection
+                gameState.match.selected = element;
+                element.classList.add('selected');
+            } else if (gameState.match.selected === element) {
+                // Deselect
+                element.classList.remove('selected');
+                gameState.match.selected = null;
+            } else {
+                // Second selection - check match
+                const first = gameState.match.selected;
+                const second = element;
+                
+                if (first.dataset.type !== second.dataset.type) {
+                    // Different types - check if they match
+                    const textElement = first.dataset.type === 'text' ? first : second;
+                    const effectElement = first.dataset.type === 'effect' ? first : second;
+                    
+                    const textId = parseInt(textElement.dataset.id);
+                    const effectId = parseInt(effectElement.dataset.id);
+                    
+                    if (matchingPairs[textId].effect === matchingPairs[effectId].effect) {
+                        // Correct match
+                        textElement.classList.add('correct');
+                        effectElement.classList.add('correct');
+                        textElement.classList.remove('selected');
+                        effectElement.classList.remove('selected');
+                        gameState.match.score++;
+                        gameState.match.completed.push(textId);
+                    } else {
+                        // Incorrect match
+                        textElement.classList.add('incorrect');
+                        effectElement.classList.add('incorrect');
+                        setTimeout(() => {
+                            textElement.classList.remove('incorrect', 'selected');
+                            effectElement.classList.remove('incorrect', 'selected');
+                        }, 1500);
+                    }
+                    
+                    gameState.match.attempts++;
+                    gameState.match.selected = null;
+                    updateProgress('match');
+                    updateScore('match');
+                    
+                    if (gameState.match.completed.length === matchingPairs.length) {
+                        setTimeout(() => {
+                            showFeedback('match', `Fantastic! You matched ${gameState.match.score} out of ${matchingPairs.length} pairs correctly.`);
+                        }, 1000);
+                    }
+                } else {
+                    // Same type - replace selection
+                    first.classList.remove('selected');
+                    element.classList.add('selected');
+                    gameState.match.selected = element;
+                }
+            }
+        }
+
+        // Utility Functions
+        function updateProgress(activity) {
+            const progressElement = document.getElementById(`progress-${activity}`);
+            if (!progressElement) return;
+            
+            let percentage = 0;
+            if (activity === 'identify') {
+                percentage = (gameState.identify.attempts / voiceExamples.length) * 100;
+            } else if (activity === 'match') {
+                percentage = (gameState.match.attempts / matchingPairs.length) * 100;
+            }
+            
+            progressElement.style.width = `${Math.min(percentage, 100)}%`;
+        }
+
+        function updateScore(activity) {
+            const scoreElement = document.getElementById(`score-${activity}`);
+            if (!scoreElement) return;
+            
+            let total = 0;
+            let score = 0;
+            
+            if (activity === 'identify') {
+                total = voiceExamples.length;
+                score = gameState.identify.score;
+            } else if (activity === 'sort') {
+                total = sortingItems.length;
+                score = gameState.sort.score;
+            } else if (activity === 'match') {
+                total = matchingPairs.length;
+                score = gameState.match.score;
+            }
+            
+            scoreElement.textContent = `Score: ${score} / ${total}`;
+        }
+
+        function showFeedback(activity, message) {
+            const feedbackElement = document.getElementById(`feedback-${activity}`);
+            if (!feedbackElement) return;
+            
+            let total = 0;
+            let score = 0;
+            
+            if (activity === 'identify') {
+                total = voiceExamples.length;
+                score = gameState.identify.score;
+            } else if (activity === 'sort') {
+                total = sortingItems.length;
+                score = gameState.sort.score;
+            } else if (activity === 'match') {
+                total = matchingPairs.length;
+                score = gameState.match.score;
+            }
+            
+            const percentage = (score / total) * 100;
+            const feedbackClass = percentage >= 70 ? 'success' : 'error';
+            
+            feedbackElement.className = `feedback ${feedbackClass} show`;
+            feedbackElement.innerHTML = `
+                <div>${message}</div>
+                <div style="margin-top: 10px; font-size: 0.9em;">
+                    ${percentage >= 90 ? '🌟 Outstanding! You have excellent voice recognition skills!' :
+                      percentage >= 70 ? '👍 Great work! You understand narrative voice well.' :
+                      percentage >= 50 ? '📚 Good effort! Review the examples to improve further.' :
+                      '💪 Keep practicing! Narrative voice takes time to master.'}
+                </div>
+            `;
+        }
+
+        function resetActivity(activity) {
+            // Reset game state
+            if (activity === 'identify') {
+                gameState.identify = { score: 0, attempts: 0, completed: [] };
+                initializeIdentifyActivity();
+                updateScore('identify');
+                updateProgress('identify');
+            } else if (activity === 'sort') {
+                gameState.sort = { score: 0, itemsPlaced: 0 };
+                initializeSortActivity();
+                updateScore('sort');
+                // Clear items from drop zones
+                document.querySelectorAll('.drop-zone').forEach(zone => {
+                    zone.querySelectorAll('.draggable').forEach(item => item.remove());
+                    zone.style.background = '';
+                });
+            } else if (activity === 'match') {
+                gameState.match = { score: 0, attempts: 0, selected: null, completed: [] };
+                initializeMatchActivity();
+                updateScore('match');
+                updateProgress('match');
+            }
+            
+            // Hide feedback
+            const feedbackElement = document.getElementById(`feedback-${activity}`);
+            if (feedbackElement) {
+                feedbackElement.classList.remove('show');
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                // Close any modals
+                const modals = document.querySelectorAll('.modal-overlay');
+                modals.forEach(modal => document.body.removeChild(modal));
+                
+                // Clear match selections
+                if (gameState.match.selected) {
+                    gameState.match.selected.classList.remove('selected');
+                    gameState.match.selected = null;
+                }
+            }
+        });
+
+        // Touch support for mobile
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', function(e) {
+            const touchY = e.touches[0].clientY;
+            const touchDiff = touchStartY - touchY;
+            
+            // Prevent bounce effect on iOS
+            if (touchDiff > 0 && window.scrollY === 0) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Initialize scores on load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateScore('identify');
+            updateScore('sort');
+            updateScore('match');
+        });
+    </script>
+</body>
+</html>
